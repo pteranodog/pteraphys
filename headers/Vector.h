@@ -1,3 +1,4 @@
+#pragma once
 class Vector
 {
     private:
@@ -18,7 +19,7 @@ class Vector
         void set(float newX, float newY, float newZ);
         void add(Vector v);
         void sub(Vector v);
-        void mul(float s);
+        void mult(float s);
         void div(float s);
         float mag();
         float magSq();

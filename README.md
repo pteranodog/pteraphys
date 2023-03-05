@@ -1,0 +1,2 @@
+# PteraPhys
+PteraPhys is a work-in-progress physics simulator that I am creating as a side project. I plan to use it both to learn more about physics simulation, and as a basis for future ideas that I may have.

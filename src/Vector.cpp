@@ -79,7 +79,7 @@ void Vector::sub(Vector v)
     z -= v.Z();
 }
 
-void Vector::mul(float s)
+void Vector::mult(float s)
 {
     x *= s;
     y *= s;
@@ -179,14 +179,14 @@ void Vector::limit(float max)
     if (magSq() > max * max)
     {
         normalize();
-        mul(max);
+        mult(max);
     }
 }
 
 void Vector::setMag(float mag)
 {
     normalize();
-    mul(mag);
+    mult(mag);
 }
 
 void Vector::setMagSq(float magSq)
