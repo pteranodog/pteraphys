@@ -1,20 +1,40 @@
 #include "PointMass.h"
 #include "Vector.h"
+#include <SFML/Graphics.hpp>
 
 PointMass::PointMass()
 {
     position = Vector(0, 0);
-    velocity = Vector(0, 0);
+    previousPosition = Vector(0, 0);
     mass = 1;
+    inverseMass = 1;
     forces = Vector(0, 0);
+    radius = 10;
+    fillColor = sf::Color::Red;
+    shape = sf::CircleShape(radius);
+    shape.setFillColor(fillColor);
+    shape.setPosition(position.X() - radius, position.Y() - radius);
 }
 
-PointMass::PointMass(Vector newPosition, Vector newVelocity, float newMass)
+PointMass::PointMass(Vector newPosition, double newMass, double newRadius, sf::Color color)
 {
     position = newPosition;
-    velocity = newVelocity;
+    previousPosition = newPosition;
     mass = newMass;
+    if (mass == 0)
+    {
+        inverseMass = 0;
+    }
+    else
+    {
+        inverseMass = 1 / mass;
+    }
     forces = Vector(0, 0);
+    radius = newRadius;
+    fillColor = color;
+    shape = sf::CircleShape(radius);
+    shape.setFillColor(fillColor);
+    shape.setPosition(position.X() - radius, position.Y() - radius);
 }
 
 Vector PointMass::getPosition()
@@ -22,12 +42,17 @@ Vector PointMass::getPosition()
     return position;
 }
 
-Vector PointMass::getVelocity()
+Vector PointMass::getPreviousPosition()
 {
-    return velocity;
+    return previousPosition;
 }
 
-float PointMass::getMass()
+Vector PointMass::getVelocity(double dt)
+{
+    return (position - previousPosition) / dt;
+}
+
+double PointMass::getMass()
 {
     return mass;
 }
@@ -37,14 +62,27 @@ void PointMass::setPosition(Vector newPosition)
     position = newPosition;
 }
 
-void PointMass::setVelocity(Vector newVelocity)
+void PointMass::setPreviousPosition(Vector newPreviousPosition)
 {
-    velocity = newVelocity;
+    previousPosition = newPreviousPosition;
 }
 
-void PointMass::setMass(float newMass)
+void PointMass::setVelocity(Vector newVelocity, double dt)
+{
+    previousPosition = position - newVelocity * dt;
+}
+
+void PointMass::setMass(double newMass)
 {
     mass = newMass;
+    if (mass == 0)
+    {
+        inverseMass = 0;
+    }
+    else
+    {
+        inverseMass = 1 / mass;
+    }
 }
 
 void PointMass::addForce(Vector force)
@@ -52,32 +90,58 @@ void PointMass::addForce(Vector force)
     forces.add(force);
 }
 
-void PointMass::update(float dt)
+void PointMass::applyForcesAndMove(double dt)
 {
-    // More complex than normal because Verlet integration is used
-    // Position is calculated as (previous position + velocity * dt + 0.5 * acceleration * dt^2)
-    // Velocity is calculated as (previous velocity + acceleration * dt)
+    Vector acceleration = forces * inverseMass;
+    Vector velocity = position - previousPosition;
+    previousPosition = position;
+    position = position + velocity + acceleration * dt * dt;
+    forces = Vector(0, 0);
+}
 
-    // Acceleration is total force divided by mass
-    Vector acceleration = forces.copy();
-    acceleration.div(mass);
+void PointMass::checkCollision(PointMass *otherMass)
+{
+    if (otherMass == this)
+    {
+        return;
+    }
+    Vector direction = position - otherMass->getPosition();
+    double distanceSq = direction.magSq();
+    double targetDistance = radius + otherMass->getRadius();
+    if (distanceSq < targetDistance * targetDistance)
+    {
+        double distance = direction.mag();
+        if (distance == 0)
+        {
+            direction = Vector(1, 0);
+        }
+        double overlap = targetDistance - distance;
+        direction.normalize();
+        double totalMassInv = 1.0 / (mass + otherMass->getMass());
+        position = position + direction * overlap * otherMass->getMass() * totalMassInv;
+        otherMass->setPosition(otherMass->getPosition() - direction * overlap * mass * totalMassInv);
+    }
+}
 
-    // To achieve this, we first make a copy of velocity and multiply it by dt
-    // We then skip to updating velocity
-    Vector deltaPosition = velocity.copy();
-    deltaPosition.mult(dt);
+void PointMass::draw(sf::RenderWindow &window)
+{
+    shape.setPosition(position.X() - radius, position.Y() - radius);
+    window.draw(shape);
+}
 
-    // Acceleration is then multiplied by dt and added to velocity
-    acceleration.mult(dt);
-    velocity.add(acceleration);
+void PointMass::setRadius(double newRadius)
+{
+    radius = newRadius;
+    shape.setRadius(radius);
+}
 
-    // Acceleration has already been multiplied by dt once
-    // Now, to get 0.5 * acceleration * dt^2, we multiply it by 0.5 * dt
-    // Then add it to deltaPosition
-    acceleration.mult(0.5 * dt);
-    deltaPosition.add(acceleration);
+double PointMass::getRadius()
+{
+    return radius;
+}
 
-    // Finally, add deltaPosition to position and reset forces
-    position.add(deltaPosition);
-    forces.set(0, 0);
+void PointMass::setFillColor(sf::Color color)
+{
+    fillColor = color;
+    shape.setFillColor(fillColor);
 }

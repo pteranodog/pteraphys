@@ -7,33 +7,33 @@ Vector::Vector()
     y = 0;
 }
 
-Vector::Vector(float newX, float newY)
+Vector::Vector(double newX, double newY)
 {
     x = newX;
     y = newY;
 }
 
-float Vector::X()
+double Vector::X()
 {
     return x;
 }
 
-float Vector::Y()
+double Vector::Y()
 {
     return y;
 }
 
-void Vector::setX(float newX)
+void Vector::setX(double newX)
 {
     x = newX;
 }
 
-void Vector::setY(float newY)
+void Vector::setY(double newY)
 {
     y = newY;
 }
 
-void Vector::set(float newX, float newY)
+void Vector::set(double newX, double newY)
 {
     x = newX;
     y = newY;
@@ -51,13 +51,13 @@ void Vector::sub(Vector v)
     y -= v.Y();
 }
 
-void Vector::mult(float s)
+void Vector::mult(double s)
 {
     x *= s;
     y *= s;
 }
 
-void Vector::div(float s)
+void Vector::div(double s)
 {
     if (s == 0)
     {
@@ -68,19 +68,19 @@ void Vector::div(float s)
     y /= s;
 }
 
-float Vector::mag()
+double Vector::mag()
 {
     return sqrt(x * x + y * y);
 }
 
-float Vector::magSq()
+double Vector::magSq()
 {
     return x * x + y * y;
 }
 
 void Vector::normalize()
 {
-    float m = mag();
+    double m = mag();
     if (m == 0)
     {
         throw "Cannot normalize a zero vector";
@@ -90,35 +90,40 @@ void Vector::normalize()
     y /= m;
 }
 
-float Vector::dot(Vector v)
+Vector Vector::normal()
+{
+    return Vector(-y, x);
+}
+
+double Vector::dot(Vector v)
 {
     return x * v.X() + y * v.Y();
 }
 
-float Vector::angle(Vector v)
+double Vector::angle(Vector v)
 {
     return acos(dot(v) / (mag() * v.mag()));
 }
 
-float Vector::angle()
+double Vector::angle()
 {
     return atan2(y, x);
 }
 
-void Vector::rotate(float angle)
+void Vector::rotate(double angle)
 {
-    float m = mag();
-    float a = atan2(y, x);
+    double m = mag();
+    double a = atan2(y, x);
     x = m * cos(a + angle);
     y = m * sin(a + angle);
 }
 
-Vector Vector::lerp(float t)
+Vector Vector::lerp(double t)
 {
     return Vector(x * t, y * t);
 }
 
-void Vector::limit(float max)
+void Vector::limit(double max)
 {
     if (magSq() > max * max)
     {
@@ -127,13 +132,13 @@ void Vector::limit(float max)
     }
 }
 
-void Vector::setMag(float mag)
+void Vector::setMag(double mag)
 {
     normalize();
     mult(mag);
 }
 
-void Vector::setMagSq(float magSq)
+void Vector::setMagSq(double magSq)
 {
     setMag(sqrt(magSq));
 }
@@ -143,23 +148,93 @@ Vector Vector::copy()
     return Vector(x, y);
 }
 
-Vector Vector::copyNormalized()
+Vector Vector::operator + (Vector v)
 {
-    Vector v = copy();
-    v.normalize();
-    return v;
+    return Vector(x + v.X(), y + v.Y());
 }
 
-Vector Vector::copyLimited(float max)
+Vector Vector::operator - (Vector v)
 {
-    Vector v = copy();
-    v.limit(max);
-    return v;
+    return Vector(x - v.X(), y - v.Y());
 }
 
-Vector Vector::copyRotated(float angle)
+Vector Vector::operator * (double s)
 {
-    Vector v = copy();
-    v.rotate(angle);
-    return v;
+    return Vector(x * s, y * s);
 }
+
+Vector Vector::operator / (double s)
+{
+    if (s == 0)
+    {
+        throw "Division by zero";
+        return Vector();
+    }
+    return Vector(x / s, y / s);
+}
+
+void Vector::operator += (Vector v)
+{
+    x += v.X();
+    y += v.Y();
+}
+
+void Vector::operator -= (Vector v)
+{
+    x -= v.X();
+    y -= v.Y();
+}
+
+void Vector::operator *= (double s)
+{
+    x *= s;
+    y *= s;
+}
+
+void Vector::operator /= (double s)
+{
+    if (s == 0)
+    {
+        throw "Division by zero";
+    }
+    x /= s;
+    y /= s;
+}
+
+bool Vector::operator == (Vector v)
+{
+    return x == v.X() && y == v.Y();
+}
+
+bool Vector::operator != (Vector v)
+{
+    return x != v.X() || y != v.Y();
+}
+
+bool Vector::operator < (Vector v)
+{
+    return magSq() < v.magSq();
+}
+
+bool Vector::operator <= (Vector v)
+{
+    return magSq() <= v.magSq();
+}
+
+bool Vector::operator > (Vector v)
+{
+    return magSq() > v.magSq();
+}
+
+bool Vector::operator >= (Vector v)
+{
+    return magSq() >= v.magSq();
+}
+
+void Vector::operator = (Vector v)
+{
+    x = v.X();
+    y = v.Y();
+}
+
+
