@@ -10,6 +10,7 @@ PointMass::PointMass()
     inverseMass = 1;
     forces = Vector(0, 0);
     radius = 10;
+    pinned = false;
     fillColor = sf::Color::Red;
     shape = sf::CircleShape(radius);
     shape.setFillColor(fillColor);
@@ -29,6 +30,7 @@ PointMass::PointMass(Vector newPosition, double newMass, double newRadius, sf::C
     {
         inverseMass = 1 / mass;
     }
+    pinned = false;
     forces = Vector(0, 0);
     radius = newRadius;
     fillColor = color;
@@ -92,6 +94,11 @@ void PointMass::addForce(Vector force)
 
 void PointMass::applyForcesAndMove(double dt)
 {
+    if (pinned)
+    {
+        forces = Vector(0, 0);
+        return;
+    }
     Vector acceleration = forces * inverseMass;
     Vector velocity = position - previousPosition;
     previousPosition = position;
@@ -117,6 +124,20 @@ void PointMass::checkCollision(PointMass *otherMass)
         }
         double overlap = targetDistance - distance;
         direction.normalize();
+        if (pinned && otherMass->isPinned())
+        {
+            return;
+        }
+        else if (pinned)
+        {
+            otherMass->setPosition(otherMass->getPosition() - direction * overlap);
+            return;
+        }
+        else if (otherMass->isPinned())
+        {
+            position = position + direction * overlap;
+            return;
+        }
         double totalMassInv = 1.0 / (mass + otherMass->getMass());
         position = position + direction * overlap * otherMass->getMass() * totalMassInv;
         otherMass->setPosition(otherMass->getPosition() - direction * overlap * mass * totalMassInv);
@@ -144,4 +165,24 @@ void PointMass::setFillColor(sf::Color color)
 {
     fillColor = color;
     shape.setFillColor(fillColor);
+}
+
+bool PointMass::isPinned()
+{
+    return pinned;
+}
+
+void PointMass::setPinned(bool newPinned)
+{
+    pinned = newPinned;
+}
+
+void PointMass::pin()
+{
+    pinned = true;
+}
+
+void PointMass::unpin()
+{
+    pinned = false;
 }

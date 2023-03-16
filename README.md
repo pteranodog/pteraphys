@@ -8,8 +8,9 @@ PteraPhys is a work-in-progress physics simulator that I am creating as a side p
 - [X] Link constraints
 - [X] A simulation class to handle global properties
 - [ ] More types and properties for point masses
-- [ ] Ability to properly pin point masses in place
+- [X] Ability to properly pin point masses in place
 - [ ] Proper collision with true restitution coefficient
+- [ ] Various types of friction
 - [ ] Point mass generators
 - [ ] Rectangle area constraints
 - [ ] Polygonal area constraints

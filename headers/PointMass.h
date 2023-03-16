@@ -5,13 +5,16 @@
 class PointMass
 {
     private:
-        // Motion and properties
+        // Motion and fundamental properties
         Vector position;
         Vector previousPosition;
         Vector forces;
         double mass;
         double inverseMass;
         double radius;
+
+        // dynamic properties
+        bool pinned;
         
         // Drawing
         sf::CircleShape shape;
@@ -28,6 +31,7 @@ class PointMass
         double getMass();
         double getInvMass();
         double getRadius();
+        bool isPinned();
 
         // Setters
         void setPosition(Vector newPosition);
@@ -35,6 +39,9 @@ class PointMass
         void setVelocity(Vector newVelocity, double dt);
         void setMass(double newMass);
         void setRadius(double newRadius);
+        void setPinned(bool newPinned);
+        void pin();
+        void unpin();
 
         // Physics
         void addForce(Vector force);

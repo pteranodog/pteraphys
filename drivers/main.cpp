@@ -21,7 +21,7 @@ int main()
     
     Simulation sim(FPS, 8, 2, 2, sf::Color::Black);
     sim.setGravity(Vector(0, 400));
-    sim.addCircleAreaConstraint(new CircleAreaConstraint(400, Vector(400, 400), sf::Color::White));    
+    sim.addCircleAreaConstraint(new CircleAreaConstraint(400, Vector(400, 400), sf::Color::White));
 
     int counter = 0;
     while (window.isOpen())

@@ -35,6 +35,20 @@ void LinkConstraint::applyConstraint()
     Vector direction = mass2Position - mass1Position;
     double currentLength = direction.mag();
     direction.normalize();
+    if (mass1->isPinned() && mass2->isPinned())
+    {
+        return;
+    }
+    else if (mass1->isPinned())
+    {
+        mass2->setPosition(mass1Position + direction * length);
+        return;
+    }
+    else if (mass2->isPinned())
+    {
+        mass1->setPosition(mass2Position - direction * length);
+        return;
+    }
     double mass1Ratio = mass1->getMass() / (mass1->getMass() + mass2->getMass());
     double mass2Ratio = mass2->getMass() / (mass1->getMass() + mass2->getMass());
     Vector newPosition1 = mass1Position + direction * (currentLength - length) * mass1Ratio;
@@ -107,6 +121,40 @@ void LinkConstraint::checkCollision(PointMass *otherMass)
         direction = (mass2->getPosition() - mass1->getPosition()).normal();
     }
     direction.normalize();
+    if (mass1->isPinned() && mass2->isPinned() && !otherMass->isPinned())
+    {
+        Vector newPosition = nearestPoint + (direction * targetDistance);
+        otherMass->setPosition(newPosition);
+        return;
+    }
+    else if (mass1->isPinned())
+    {
+        Vector newPosition2 = mass2->getPosition() - direction * (targetDistance - distance);
+        mass2->setPosition(newPosition2);
+        Vector newNearestPoint = nearestToPoint(otherPosition);
+        Vector newDirection = otherPosition - newNearestPoint;
+        newDirection.normalize();
+        otherMass->setPosition(newNearestPoint + (newDirection * targetDistance));
+        return;
+    }
+    else if (mass2->isPinned())
+    {
+        Vector newPosition1 = mass1->getPosition() + direction * (targetDistance - distance);
+        mass1->setPosition(newPosition1);
+        Vector newNearestPoint = nearestToPoint(otherPosition);
+        Vector newDirection = otherPosition - newNearestPoint;
+        newDirection.normalize();
+        otherMass->setPosition(newNearestPoint + (newDirection * targetDistance));
+        return;
+    }
+    else if (otherMass->isPinned())
+    {
+        Vector newPosition1 = mass1->getPosition() - direction * (targetDistance - distance) * mass1->getMass() / (mass1->getMass() + mass2->getMass());
+        Vector newPosition2 = mass2->getPosition() + direction * (targetDistance - distance) * mass2->getMass() / (mass1->getMass() + mass2->getMass());
+        mass1->setPosition(newPosition1);
+        mass2->setPosition(newPosition2);
+        return;
+    }
     double totalDistanceToMove = (distance - targetDistance) * otherMass->getMass() / (mass1->getMass() + mass2->getMass() + otherMass->getMass());
     Vector newPosition1 = mass1->getPosition() + direction * t * totalDistanceToMove;
     Vector newPosition2 = mass2->getPosition() + direction * (1 - t) * totalDistanceToMove;
